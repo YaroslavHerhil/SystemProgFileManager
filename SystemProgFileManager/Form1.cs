@@ -142,8 +142,7 @@ namespace SystemProgFileManager
             moveThread.Start();
             movePanel.Visible = false;
             menuPanel.Visible = true;
-            fileTreeView.CollapseAll();
-
+            fileTreeView.SelectedNode.Collapse();
         }
 
         private void fileTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -166,12 +165,11 @@ namespace SystemProgFileManager
                     inforLabelPerm.Text = "Permissions: ";
                     DirectoryInfo dInfo = new DirectoryInfo(selectedNodePath);
                     DirectorySecurity dSecurity = dInfo.GetAccessControl();
-                    inforLabelPerm.Text = dSecurity.ToString();
 
 
-
+                    infoLabelSize.Text = $"Size: {DirSize(dInfo)} Bytes";
                     var accessRules = dSecurity.GetAccessRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
-                    inforLabelPerm.Text += accessRules != null ? " Readable," : " Not Readable,";
+                    inforLabelPerm.Text += accessRules != null ? "\n\tReadable" : "\n\tNot Readable";
 
 
 
@@ -179,20 +177,21 @@ namespace SystemProgFileManager
                 else
                 {
                     inforLabelPerm.Text = "Permissions: ";
-                    infoLabelSize.Text = "Size: " + new FileInfo(selectedNodePath).Length.ToString() + " B";
+                    infoLabelSize.Text = "Size: " + new FileInfo(selectedNodePath).Length.ToString() + " Bytes";
                     using (var fs = new FileStream(selectedNodePath, FileMode.Open))
                     {
-                        inforLabelPerm.Text += fs.CanRead ? " Readable," : " Not Readable,";
-                        inforLabelPerm.Text += fs.CanWrite ? " Writable" : " Not Writable";
+                        inforLabelPerm.Text += fs.CanRead ? "\n\tReadable" : "\n\tNot Readable";
+                        inforLabelPerm.Text += fs.CanWrite ? "\n\tWritable" : "\n\tNot Writable";
                     }
                 }
             }
             catch(UnauthorizedAccessException ex)
             {
-                inforLabelPerm.Text = "Permissions: Not Readable, Not Writable";
+                inforLabelPerm.Text = "Permissions:\n\t Not Readable\n\t Not Writable";
             }
             catch(Exception ex)
             {
+                MessageBox.Show($"An exception has occured: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             }
 
@@ -211,6 +210,27 @@ namespace SystemProgFileManager
                 size += DirSize(di);
             }
             return size;
+        }
+
+        private void btnNewFolder_Click(object sender, EventArgs e)
+        {
+            string folderName = folderNameTextBox.Text == "" ?  "New Folder" : folderNameTextBox.Text;
+            try
+            {
+                fileTreeView.SelectedNode.Collapse();
+                Directory.CreateDirectory(Path.Combine(selectedPath2, folderName));
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show($"An exception has occured: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
+
+        }
+
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
         }
 
         private void fileTreeView_AfterExpand(object sender, TreeViewEventArgs e)

@@ -88,21 +88,21 @@ namespace SystemProgFileManager
         public void CopyFiles(string copyPath, string dest)
         {
             try
-
             {
+
                 if (File.GetAttributes(copyPath).HasFlag(FileAttributes.Directory))
                 {
-                    var allDirectories = Directory.GetDirectories(copyPath, "*", SearchOption.AllDirectories);
-
-                    foreach (var dir in allDirectories)
+                    Directory.CreateDirectory(Path.Combine(dest, Path.GetFileName(copyPath)));
+                    dest = Path.Combine(dest, Path.GetFileName(copyPath));
+                    foreach (string dirPath in Directory.GetDirectories(copyPath, "*", SearchOption.AllDirectories))
                     {
-                        Directory.CreateDirectory(dir.Replace(copyPath, dest));
+                        Directory.CreateDirectory(dirPath.Replace(copyPath, dest));
                     }
 
-                    var allFiles = Directory.GetFiles(copyPath, "*.*", SearchOption.AllDirectories);
-                    foreach (var file in allFiles)
+                    //Copy all the files & Replaces any files with the same name
+                    foreach (string newPath in Directory.GetFiles(copyPath, "*.*", SearchOption.AllDirectories))
                     {
-                        File.Copy(file, file.Replace(copyPath, dest), true);
+                        File.Copy(newPath, newPath.Replace(copyPath, dest), true);
                     }
                 }
                 else
