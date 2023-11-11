@@ -21,7 +21,7 @@ namespace SystemProgFileManager
     {
         string selectedPath1, selectedPath2;
 
-        string[] directories;
+
         public Form1()
         {
             
@@ -162,12 +162,22 @@ namespace SystemProgFileManager
 
                 if (File.GetAttributes(selectedNodePath).HasFlag(FileAttributes.Directory))
                 {
+                    
                     inforLabelPerm.Text = "Permissions: ";
                     DirectoryInfo dInfo = new DirectoryInfo(selectedNodePath);
                     DirectorySecurity dSecurity = dInfo.GetAccessControl();
 
-
-                    infoLabelSize.Text = $"Size: {DirSize(dInfo)} Bytes";
+                    infoLabelSize.Text = "Size: Calculationg...";
+                    Thread sizeThread = new Thread(() => 
+                    { 
+                        string size = $"Size: {DirSize(dInfo)} Bytes";
+                        Invoke(new Action(() =>
+                        {
+                           infoLabelSize.Text = size;
+                        }));
+                    }
+                    );
+                    sizeThread.Start();
                     var accessRules = dSecurity.GetAccessRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
                     inforLabelPerm.Text += accessRules != null ? "\n\tReadable" : "\n\tNot Readable";
 
